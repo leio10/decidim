@@ -12,7 +12,7 @@ module Decidim
         translatable_attribute :title, String
         translatable_attribute :description, String
 
-        attribute :budget, Integer
+        attribute :budget_amount, Integer
         attribute :decidim_scope_id, Integer
         attribute :decidim_category_id, Integer
         attribute :proposal_ids, Array[Integer]
@@ -22,12 +22,11 @@ module Decidim
 
         validates :title, translatable_presence: true
         validates :description, translatable_presence: true
-        validates :budget, presence: true, numericality: { greater_than: 0 }
+        validates :budget_amount, presence: true, numericality: { greater_than: 0 }
 
         validates :category, presence: true, if: ->(form) { form.decidim_category_id.present? }
         validates :scope, presence: true, if: ->(form) { form.decidim_scope_id.present? }
-
-        validate :scope_belongs_to_participatory_space_scope
+        validates :decidim_scope_id, scope_belongs_to_component: true, if: ->(form) { form.decidim_scope_id.present? }
 
         validate :notify_missing_attachment_if_errored
 
@@ -47,6 +46,13 @@ module Decidim
                          &.order(title: :asc)
         end
 
+        # Finds the Budget from the decidim_budgets_budget_id.
+        #
+        # Returns a Decidim::Budgets:Budget
+        def budget
+          @budget ||= context[:budget]
+        end
+
         # Finds the Category from the decidim_category_id.
         #
         # Returns a Decidim::Category
@@ -54,11 +60,11 @@ module Decidim
           @category ||= categories.find_by(id: decidim_category_id)
         end
 
-        # Finds the Scope from the given decidim_scope_id, uses participatory space scope if missing.
+        # Finds the Scope from the given decidim_scope_id, uses the component scope if missing.
         #
         # Returns a Decidim::Scope
         def scope
-          @scope ||= @decidim_scope_id ? current_participatory_space.scopes.find_by(id: @decidim_scope_id) : current_participatory_space.scope
+          @scope ||= @decidim_scope_id ? current_component.scopes.find_by(id: @decidim_scope_id) : current_component.scope
         end
 
         # Scope identifier
@@ -69,10 +75,6 @@ module Decidim
         end
 
         private
-
-        def scope_belongs_to_participatory_space_scope
-          errors.add(:decidim_scope_id, :invalid) if current_participatory_space.out_of_scope?(scope)
-        end
 
         # This method will add an error to the `attachment` field only if there's
         # any error in any other field. This is needed because when the form has

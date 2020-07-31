@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# frozen_literal_string: true
-
 require "spec_helper"
 
 module Decidim::Budgets
@@ -17,15 +15,17 @@ module Decidim::Budgets
       }
     end
     let(:participatory_process) { create :participatory_process, organization: organization }
-    let(:current_component) { create :budget_component, participatory_space: participatory_process }
+    let(:current_component) { create :budgets_component, participatory_space: participatory_process }
+    let(:budget) { create :budget, component: current_component }
     let(:title) do
       Decidim::Faker::Localized.sentence(3)
     end
     let(:description) do
       Decidim::Faker::Localized.sentence(3)
     end
-    let(:budget) { Faker::Number.number(8) }
-    let(:scope) { create :scope, organization: organization }
+    let(:budget_amount) { Faker::Number.number(8) }
+    let(:parent_scope) { create(:scope, organization: organization) }
+    let(:scope) { create(:subscope, parent: parent_scope) }
     let(:scope_id) { scope.id }
     let(:category) { create :category, participatory_space: participatory_process }
     let(:category_id) { category.id }
@@ -35,9 +35,11 @@ module Decidim::Budgets
         decidim_category_id: category_id,
         title_en: title[:en],
         description_en: description[:en],
-        budget: budget
+        budget_amount: budget_amount
       }
     end
+
+    it_behaves_like "a scopable resource"
 
     it { is_expected.to be_valid }
 
@@ -53,14 +55,14 @@ module Decidim::Budgets
       it { is_expected.not_to be_valid }
     end
 
-    describe "when budget is missing" do
-      let(:budget) { nil }
+    describe "when budget_amount is missing" do
+      let(:budget_amount) { nil }
 
       it { is_expected.not_to be_valid }
     end
 
-    describe "when budget is less or equal 0" do
-      let(:budget) { 0 }
+    describe "when budget_amount is less or equal 0" do
+      let(:budget_amount) { 0 }
 
       it { is_expected.not_to be_valid }
     end
@@ -92,7 +94,7 @@ module Decidim::Budgets
       let(:project) do
         create(
           :project,
-          component: current_component,
+          budget: budget,
           scope: scope,
           category: category
         )
@@ -114,46 +116,6 @@ module Decidim::Budgets
         it "sets the proposal_ids correctly" do
           project.link_resources([proposal], "included_proposals")
           expect(subject.proposal_ids).to eq [proposal.id]
-        end
-      end
-    end
-
-    describe "scope" do
-      subject { form.scope }
-
-      context "when the scope exists" do
-        it { is_expected.to be_kind_of(Decidim::Scope) }
-      end
-
-      context "when the scope does not exist" do
-        let(:scope_id) { 3456 }
-
-        it { is_expected.to eq(nil) }
-      end
-
-      context "when the scope is from another organization" do
-        let(:scope_id) { create(:scope).id }
-
-        it { is_expected.to eq(nil) }
-      end
-
-      context "when the participatory space has a scope" do
-        let(:parent_scope) { create(:scope, organization: organization) }
-        let(:participatory_process) { create(:participatory_process, :with_steps, organization: organization, scope: parent_scope) }
-        let(:scope) { create(:scope, organization: organization, parent: parent_scope) }
-
-        context "when the scope is descendant from participatory space scope" do
-          it { is_expected.to eq(scope) }
-        end
-
-        context "when the scope is not descendant from participatory space scope" do
-          let(:scope) { create(:scope, organization: organization) }
-
-          it { is_expected.to eq(scope) }
-
-          it "makes the form invalid" do
-            expect(form).to be_invalid
-          end
         end
       end
     end

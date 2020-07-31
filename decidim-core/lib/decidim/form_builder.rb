@@ -32,7 +32,7 @@ module Decidim
     # text and errors.
     #
     # attribute       - the name of the field
-    # collection      - the collection from which we will render the check boxes
+    # collection      - the collection from which we will render the radio buttons
     # value_attribute - a Symbol or a Proc defining how to find the value attribute
     # text_attribute  - a Symbol or a Proc defining how to find the text attribute
     # options         - a Hash with options
@@ -290,8 +290,11 @@ module Decidim
     #
     # Returns a String.
     def scopes_picker(attribute, options = {})
-      id = "#{@object_name}_#{attribute}"
-      id = "#{self.options[:namespace]}_#{id}" if self.options.has_key?(:namespace)
+      id = if self.options.has_key?(:namespace)
+             "#{self.options[:namespace]}_#{id}"
+           else
+             "#{sanitize_for_dom_selector(@object_name)}_#{attribute}"
+           end
 
       picker_options = {
         id: id,
@@ -816,6 +819,10 @@ module Decidim
 
     def sanitize_tabs_selector(id)
       id.tr("[", "-").tr("]", "-")
+    end
+
+    def sanitize_for_dom_selector(name)
+      name.to_s.parameterize.underscore
     end
 
     def extension_whitelist_help(extension_whitelist)

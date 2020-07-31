@@ -9,9 +9,13 @@ module Decidim
       include Orderable
       include Decidim::Budgets::Orderable
 
-      helper_method :projects, :project
+      helper_method :projects, :project, :budget
 
       private
+
+      def budget
+        @budget ||= Budget.where(component: current_component).includes(:projects).find_by(id: params[:budget_id])
+      end
 
       def projects
         return @projects if @projects
@@ -21,7 +25,7 @@ module Decidim
       end
 
       def project
-        @project ||= search.results.find(params[:id])
+        @project ||= Project.find_by(id: params[:id])
       end
 
       def search_klass
@@ -43,17 +47,17 @@ module Decidim
       end
 
       def default_filter_scope_params
-        return "all" unless current_component.participatory_space.scopes.any?
+        return "all" unless current_component.scopes.any?
 
-        if current_component.participatory_space.scope
-          ["all", current_component.participatory_space.scope.id] + current_component.participatory_space.scope.children.map { |scope| scope.id.to_s }
+        if current_component.scope
+          ["all", current_component.scope.id] + current_component.scope.children.map { |scope| scope.id.to_s }
         else
-          %w(all global) + current_component.participatory_space.scopes.map { |scope| scope.id.to_s }
+          %w(all global) + current_component.scopes.map { |scope| scope.id.to_s }
         end
       end
 
       def context_params
-        { component: current_component, organization: current_organization }
+        { budget: budget, component: current_component, organization: current_organization }
       end
     end
   end
