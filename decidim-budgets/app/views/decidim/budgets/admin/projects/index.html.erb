@@ -14,7 +14,8 @@
         <thead>
           <tr>
             <th><%= t("models.project.fields.title", scope: "decidim.budgets") %></th>
-            <th class="center"><%= t("index.confirmed_orders_count") %></th>
+            <th><%= t("index.confirmed_orders_count") %></th>
+            <th><%= t(".selected") %></th>
             <%= th_resource_scope_label %>
             <th class="actions"><%= t("actions.title", scope: "decidim.budgets") %></th>
           </tr>
@@ -25,8 +26,15 @@
               <td>
                 <%= translated_attribute(project.title) %><br>
               </td>
-              <td class='center'>
+              <td>
                <%= project.confirmed_orders_count %>
+              </td>
+              <td>
+                <% if project.selected? %>
+                  <%= content_tag :strong, t(".selected"), class: "text-success" %>
+                <% else %>
+                  <%= content_tag :span, "×", class: "text-muted" %>
+                <% end %>
               </td>
               <%= td_resource_scope_for(project.scope) %>
               <td class="table-list__actions">
