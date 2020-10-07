@@ -35,7 +35,7 @@
                 <% elsif allowed_to? :read, :moderation, conference: conference %>
                   <%= link_to translated_attribute(conference.title), moderations_path(conference) %><br>
                 <% else %>
-                  <%= translated_attribute(conference.title) %>
+                  <%= decidim_html_escape translated_attribute(conference.title) %>
                 <% end %>
               </td>
               <td>
