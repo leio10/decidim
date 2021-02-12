@@ -50,8 +50,6 @@ zh-CN:
         confirm_destroy: 您确定吗？
         destroy: 破坏的
         edit: 编辑
-        edit_answers: 编辑答案
-        edit_questions: 编辑问题
         import: 导入建议以答案
         new: 新建 %{name}
         preview: 预览
@@ -169,7 +167,6 @@ zh-CN:
           filter_by: 筛选方式
           unfold: 展开...
         show:
-          back: 所有选举
           preview: 预览
           vote: 投票
           voting_period_status:
@@ -212,7 +209,6 @@ zh-CN:
           header: 已确认投票
           lead: 您的投票已被投出！
           text: '您可以检查您的投票是否已成功地添加到选票箱，其标识符如下： <strong class="evote__poll-id">%{e_vote_poll_id}</strong>'
-          verify_text: 要检查它，请复制标识符并粘贴在 <a href="evote-verify">投票验证页面</a>
         encrypting:
           header: 编码投票...
           text: 您的投票正在加密，以确保您可以匿名投射。

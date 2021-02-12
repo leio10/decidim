@@ -7,6 +7,13 @@ cs:
         organization_name: Organizace
         organization_url: URL organizace
         redirect_uri: Přesměrovací URI
+      organization:
+        address: SMTP hostname
+        from_email: E-mailová adresa
+        from_label: Popisek
+        password: Heslo
+        port: Port
+        user_name: Uživatelské jméno
       organization_file_uploads:
         allowed_content_types:
           admin: Admin MIME typy
@@ -52,7 +59,7 @@ cs:
           success: Správce byl úspěšně aktualizován
       default_pages:
         placeholders:
-          content: Přidejte významný obsah na statickou stránku %{page} na řídicím panelu administrátora.
+          content: Přidejte smysluplný obsah na statickou stránku %{page} na ovládacím panelu administrátora.
           title: Výchozí název pro %{page}
       menu:
         admins: Správci
@@ -153,8 +160,10 @@ cs:
             api_key: Klíč API
             api_secret: API heslo
         smtp_settings:
+          fieldsets:
+            sender: Odesilatel
           instructions:
-            from_label: 'Odesílatel e-mailu bude: "jméno-vaší-organizace <your-organization@example.org>". Nechte prázdné pro použití štítku ''from_email'''
+            from_label: 'Odesílatel e-mailu bude: "Název vaší organizace <your-organization@example.org>". Ponechte prázdné pro použití ''E-mailová adresa'' jako popisku'
           placeholder:
             from_email: vaše-organizace@example.org
             from_label: jméno vaší organizace
@@ -170,4 +179,4 @@ cs:
           no_organization_warning_html: Abyste mohli začít, musíte vytvořit organizaci. Před pokračováním se ujistěte, že jste si přečetli %{guide}.
           our_getting_started_guide: náš průvodce začínáme
       titles:
-        dashboard: Přístrojová deska
+        dashboard: Ovládací panel

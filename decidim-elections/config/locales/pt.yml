@@ -48,8 +48,6 @@ pt:
         confirm_destroy: Tem a certeza?
         destroy: Destruir
         edit: Editar
-        edit_answers: Editar respostas
-        edit_questions: Editar perguntas
         import: Importar propostas para perguntas
         new: Novo %{name}
         preview: Pré-visualizar
@@ -140,7 +138,6 @@ pt:
             one: "%{count} eleição"
             other: "%{count} eleições"
         show:
-          back: Todas as eleições
           preview: Pré-visualizar
           vote: Voto
           voting_period_status:
@@ -178,7 +175,6 @@ pt:
           header: Voto confirmado
           lead: O seu voto já foi transmitido!
           text: 'Pode verificar que o seu voto foi adicionado corretamente à caixa de voto com o seguinte identificador: <strong class="evote__poll-id">%{e_vote_poll_id}</strong>'
-          verify_text: Para verificá-lo, copie o identificador e cole-o na <a href="evote-verify">página de verificação de voto</a>
         encrypting:
           header: A codificar voto...
           text: O seu voto está a ser encriptado para garantir que pode transmiti-lo anonimamente.

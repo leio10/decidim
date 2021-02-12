@@ -29,14 +29,12 @@ module Decidim
       end
 
       def search_type
-        case options[:type]
-        when "online"
-          query.online
-        when "in_person"
-          query.in_person
-        else
-          query
+        fields = Decidim::Meetings::Meeting::TYPE_OF_MEETING
+        filtered = []
+        options[:type].each do |inquiry|
+          filtered.push(inquiry) if fields.include?(inquiry)
         end
+        filtered.size.positive? ? query.where(decidim_meetings_meetings: { type_of_meeting: filtered }) : query
       end
     end
   end

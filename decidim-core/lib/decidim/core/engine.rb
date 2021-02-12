@@ -28,6 +28,7 @@ require "omniauth-twitter"
 require "omniauth-google-oauth2"
 require "invisible_captcha"
 require "premailer/rails"
+require "premailer/adapter/decidim"
 require "geocoder"
 require "paper_trail"
 require "cells/rails"
@@ -87,9 +88,9 @@ module Decidim
       end
 
       initializer "decidim.graphql_api" do
-        Decidim::Api::QueryType.define do
-          Decidim::QueryExtensions.define(self)
-        end
+        # Enable them method `!` everywhere for compatibility, this line will be removed when upgrading to GraphQL 2.0
+        GraphQL::DeprecatedDSL.activate
+        Decidim::Api::QueryType.include Decidim::QueryExtensions
 
         Decidim::Api.add_orphan_type Decidim::Core::UserType
         Decidim::Api.add_orphan_type Decidim::Core::UserGroupType
@@ -504,6 +505,10 @@ module Decidim
 
       initializer "nbspw" do
         NOBSPW.configuration.use_ruby_grep = true
+      end
+
+      initializer "decidim.premailer" do
+        Premailer::Adapter.use = :decidim
       end
 
       config.to_prepare do

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "decidim/faker/localized"
+require "decidim/faker/internet"
 require "decidim/dev"
 
 require "decidim/participatory_processes/test/factories"
@@ -37,7 +38,7 @@ FactoryBot.define do
   end
 
   sequence(:slug) do |n|
-    "#{Faker::Internet.slug(words: nil, glue: "-")}-#{n}".gsub("'", "_")
+    "#{Decidim::Faker::Internet.slug(words: nil, glue: "-")}-#{n}".gsub("'", "_")
   end
 
   sequence(:scope_name) do |n|
@@ -108,6 +109,10 @@ FactoryBot.define do
     end
     file_upload_settings { Decidim::OrganizationSettings.default(:upload) }
 
+    trait :secure_context do
+      host { "localhost" }
+    end
+
     after(:create) do |organization, evaluator|
       if evaluator.create_static_pages
         tos_page = Decidim::StaticPage.find_by(slug: "terms-and-conditions", organization: organization)
@@ -134,6 +139,13 @@ FactoryBot.define do
 
     trait :confirmed do
       confirmed_at { Time.current }
+    end
+
+    trait :blocked do
+      blocked { true }
+      blocked_at { Time.current }
+      extended_data { { "user_name": generate(:name) } }
+      name { "Blocked user" }
     end
 
     trait :deleted do
@@ -265,6 +277,7 @@ FactoryBot.define do
     title { generate_localized_title }
     content { Decidim::Faker::Localized.wrapped("<p>", "</p>") { generate_localized_title } }
     organization { build(:organization) }
+    allow_public_access { false }
 
     trait :default do
       slug { Decidim::StaticPage::DEFAULT_PAGES.sample }
@@ -693,6 +706,16 @@ FactoryBot.define do
     trait :rejected do
       state { "rejected" }
     end
+  end
+
+  factory :user_report, class: "Decidim::UserReport" do
+    reason { "spam" }
+    moderation { build(:user_moderation) }
+    user { build(:user, organization: moderation.organization) }
+  end
+
+  factory :user_moderation, class: "Decidim::UserModeration" do
+    user { build(:user) }
   end
 
   factory :endorsement, class: "Decidim::Endorsement" do

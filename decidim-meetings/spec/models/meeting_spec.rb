@@ -99,6 +99,63 @@ module Decidim::Meetings
       end
     end
 
+    describe "#can_register_invitation?" do
+      subject { meeting.can_register_invitation?(user) }
+
+      let(:user) { build :user, organization: meeting.component.organization }
+
+      context "when registrations are disabled" do
+        let(:meeting) { build :meeting, registrations_enabled: false }
+
+        it { is_expected.to eq false }
+      end
+
+      context "when meeting is closed" do
+        let(:meeting) { build :meeting, :closed }
+
+        it { is_expected.to eq false }
+      end
+
+      context "when the user cannot participate to the meeting" do
+        let(:meeting) { build :meeting, :closed }
+
+        before do
+          allow(meeting).to receive(:can_register_invitation?).and_return(false)
+        end
+
+        it { is_expected.to eq false }
+      end
+
+      context "when everything is OK" do
+        let(:meeting) { build :meeting, registrations_enabled: true }
+
+        it { is_expected.to eq true }
+      end
+
+      context "when no user on register process" do
+        let(:meeting) { build :meeting, registrations_enabled: true, private_meeting: true, transparent: false }
+        let(:user) { nil }
+
+        it { is_expected.to eq false }
+      end
+
+      context "when user has invitation to register" do
+        let(:meeting) { create :meeting, registrations_enabled: true, private_meeting: true, transparent: false }
+        let(:invite) { create(:invite, accepted_at: Time.current, rejected_at: nil, user: user, meeting: meeting) }
+
+        it "allows the user to join the meeting" do
+          meeting.invites << invite
+          expect(subject).to eq true
+        end
+      end
+
+      context "when user has no invitation to register" do
+        let(:meeting) { build :meeting, registrations_enabled: true, private_meeting: true, transparent: false }
+
+        it { is_expected.to eq false }
+      end
+    end
+
     describe "#meeting_duration" do
       let(:start_time) { 1.day.from_now }
       let!(:meeting) { build(:meeting, start_time: start_time, end_time: start_time.advance(hours: 2)) }
@@ -119,6 +176,14 @@ module Decidim::Meetings
         before { subject.update(private_meeting: true, transparent: true) }
 
         it { is_expected.to be_resource_visible }
+      end
+
+      context "when Meeting is moderated" do
+        let!(:moderation) { create(:moderation, :hidden, reportable: meeting) }
+
+        before { subject.reload }
+
+        it { is_expected.not_to be_resource_visible }
       end
     end
 
@@ -204,6 +269,58 @@ module Decidim::Meetings
 
         it "returns false" do
           expect(subject).not_to be_pad_is_writable
+        end
+      end
+    end
+
+    describe "#past?" do
+      context "when past meeting" do
+        let(:meeting) { build :meeting, :past }
+
+        it "returns true" do
+          expect(subject.past?).to be true
+        end
+      end
+
+      context "when future meeting" do
+        it "returns false" do
+          expect(subject.past?).to be false
+        end
+      end
+    end
+
+    describe "#has_contributions?" do
+      context "when the meeting has contributions" do
+        let(:meeting) { build :meeting, contributions_count: 10 }
+
+        it "returns true" do
+          expect(subject.has_contributions?).to be true
+        end
+      end
+
+      context "when the meeting does not have contributions" do
+        let(:meeting) { build :meeting }
+
+        it "returns false" do
+          expect(subject.has_contributions?).to be false
+        end
+      end
+    end
+
+    describe "#has_attendees?" do
+      context "when the meeting has attendees" do
+        let(:meeting) { build :meeting, attendees_count: 10 }
+
+        it "returns true" do
+          expect(subject.has_attendees?).to be true
+        end
+      end
+
+      context "when the meeting does not have attendees" do
+        let(:meeting) { build :meeting }
+
+        it "returns false" do
+          expect(subject.has_attendees?).to be false
         end
       end
     end

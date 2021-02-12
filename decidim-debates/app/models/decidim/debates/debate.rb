@@ -62,6 +62,16 @@ module Decidim
         ResourceLocatorPresenter.new(self).url
       end
 
+      # Public: Overrides the `reported_attributes` Reportable concern method.
+      def reported_attributes
+        [:title, :description]
+      end
+
+      # Public: Overrides the `reported_searchable_content_extras` Reportable concern method.
+      def reported_searchable_content_extras
+        [normalized_author.name]
+      end
+
       # Public: Calculates whether the current debate is an AMA-styled one or not.
       # AMA-styled debates are those that have a start and end time set, and comments
       # are only open during that timelapse. AMA stands for Ask Me Anything, a type
@@ -131,10 +141,13 @@ module Decidim
       end
 
       def self.newsletter_participant_ids(component)
-        Decidim::Debates::Debate.where(component: component).joins(:component)
-                                .where(decidim_author_type: Decidim::UserBaseEntity.name)
-                                .where.not(author: nil)
-                                .pluck(:decidim_author_id).flatten.compact.uniq
+        authors_ids = Decidim::Debates::Debate.where(component: component)
+                                              .where(decidim_author_type: Decidim::UserBaseEntity.name)
+                                              .where.not(author: nil)
+                                              .group(:decidim_author_id)
+                                              .pluck(:decidim_author_id).flatten.compact
+        commentators_ids = Decidim::Comments::Comment.user_commentators_ids_in(Decidim::Debates::Debate.where(component: component))
+        (authors_ids + commentators_ids).flatten.compact.uniq
       end
 
       # Checks whether the user can edit the debate.
